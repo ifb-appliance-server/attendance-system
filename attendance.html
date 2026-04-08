@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Technician Attendance System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* GPS Status */
+        .gps-status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid #dc3545;
+        }
+
+        .gps-status.on {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .gps-status.off {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .gps-status.checking {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .gps-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .gps-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .gps-status.on .gps-indicator {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .location-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .location-area.location-detected {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .location-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .location-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .location-subtext {
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .auto-detect-badge {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 11px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .manual-toggle {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .manual-toggle-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+
+        .manual-location {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .manual-location.show {
+            display: block;
+        }
+
+        .manual-location input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .button-area {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .retry-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .status-card {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status-card.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .status-card.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .status-card.loading {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+            display: block;
+        }
+
+        .info-row {
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .enable-gps-guide {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .enable-gps-guide.show {
+            display: block;
+        }
+
+        /* Report Tab Styles */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-filter input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn-report {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .pin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pin-modal.show {
+            display: flex;
+        }
+
+        .pin-modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .pin-modal-content input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 Technician Attendance</h1>
+        <div class="subtitle">Auto-detects location when GPS is ON</div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
+            <button class="tab" onclick="checkPinAndOpenReport()">📊 View Report</button>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendanceTab" class="tab-content active">
+            <!-- GPS Status -->
+            <div id="gpsStatus" class="gps-status checking">
+                <div class="gps-label">
+                    <span class="gps-indicator"></span>
+                    <span id="gpsStatusText">Checking GPS...</span>
+                </div>
+                <div id="gpsMessage" class="gps-message">Please wait...</div>
+            </div>
+
+            <div class="form-group">
+                <label>👤 Technician Name:</label>
+                <input type="text" id="techName" placeholder="Enter your full name" autocomplete="name">
+            </div>
+
+            <div id="locationArea" class="location-area">
+                <span class="location-icon">📍</span>
+                <div class="location-text" id="locationText">Waiting for GPS...</div>
+                <div class="location-subtext" id="locationSubtext">Turn ON location to auto-detect</div>
+                <div class="auto-detect-badge">⚡ Auto-Detect Active</div>
+            </div>
+
+            <div class="manual-toggle">
+                <button class="manual-toggle-btn" onclick="toggleManualMode()" id="manualToggleBtn">✍️ Enter Location Manually Instead</button>
+            </div>
+
+            <div id="manualLocation" class="manual-location">
+                <label>📍 Enter Location Manually:</label>
+                <input type="text" id="manualLat" placeholder="Latitude (e.g., 28.6139)">
+                <input type="text" id="manualLng" placeholder="Longitude (e.g., 77.2090)">
+                <input type="text" id="manualAddress" placeholder="Address or Site Name">
+                <button class="retry-btn" onclick="useManualLocation()">✓ Use Manual Location</button>
+            </div>
+
+            <div class="button-area">
+                <button class="submit-btn" id="submitBtn">✅ SUBMIT ATTENDANCE</button>
+            </div>
+
+            <div id="statusCard" class="status-card"></div>
+        </div>
+
+        <!-- Report Tab -->
+        <div id="reportTab" class="tab-content">
+            <div class="report-header">
+                <h2>📋 Daily Report</h2>
+                <div class="date-filter">
+                    <input type="date" id="reportDate" onchange="loadReport()">
+                    <button class="btn-report" onclick="loadReport()" style="background:#667eea">Load</button>
+                </div>
+            </div>
+            <div class="stats" id="statsContainer"></div>
+            <div class="table-container">
+                <table id="reportTable">
+                    <thead>
+                        <tr><th>#</th><th>Name</th><th>Time</th><th>Location</th><th>Method</th></tr>
+                    </thead>
+                    <tbody id="reportBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div id="pinModal" class="pin-modal">
+        <div class="pin-modal-content">
+            <h3>🔐 Enter PIN</h3>
+            <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="5">
+            <button class="submit-btn" onclick="verifyPin()" style="padding: 10px;">Verify</button>
+            <button class="btn-report" onclick="closePinModal()" style="margin-top: 10px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLocation = null;
+        let currentAddress = null;
+        let usingManualLocation = false;
+        let attendanceRecords = [];
+        let gpsWatchId = null;
+
+        const CORRECT_PIN = "20000";
+
+        function loadAttendanceRecords() {
+            const saved = localStorage.getItem('attendanceRecords');
+            if (saved) attendanceRecords = JSON.parse(saved);
+        }
+
+        function saveAttendanceRecords() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (tabName === 'attendance') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('attendanceTab').classList.add('active');
+            }
+        }
+
+        function checkPinAndOpenReport() {
+            document.getElementById('pinModal').classList.add('show');
+            document.getElementById('pinInput').value = '';
+        }
+
+        function verifyPin() {
+            if (document.getElementById('pinInput').value === CORRECT_PIN) {
+                closePinModal();
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('reportTab').classList.add('active');
+                document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+                loadReport();
+            } else {
+                alert('❌ Incorrect PIN!');
+            }
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('show');
+        }
+
+        function loadReport() {
+            const date = document.getElementById('reportDate').value;
+            const records = attendanceRecords.filter(r => new Date(r.timestamp).toISOString().split('T')[0] === date);
+            
+            const stats = document.getElementById('statsContainer');
+            stats.innerHTML = `
+                <div class="stat-card"><h3>Total</h3><div class="number">${records.length}</div></div>
+                <div class="stat-card"><h3>Auto GPS</h3><div class="number">${records.filter(r => r.method === 'Auto GPS').length}</div></div>
+                <div class="stat-card"><h3>Manual</h3><div class="number">${records.filter(r => r.method === 'Manual Entry').length}</div></div>
+            `;
+            
+            const body = document.getElementById('reportBody');
+            if (records.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center">No records</td></tr>';
+            } else {
+                body.innerHTML = records.map((r, i) => `
+                    <tr><td>${i+1}</td><td>${r.name}</td><td>${r.time}</td><td>${r.address?.substring(0,30)||r.location}</td><td>${r.method}</td></tr>
+                `).join('');
+            }
+        }
+
+        function startAutoDetection() {
+            if (!navigator.geolocation) {
+                updateGpsUI('off', 'Not supported');
+                return;
+            }
+            
+            updateGpsUI('checking', 'Requesting location...');
+            
+            gpsWatchId = navigator.geolocation.watchPosition(
+                async (position) => {
+                    updateGpsUI('on', 'Location detected');
+                    const { latitude, longitude } = position.coords;
+                    currentLocation = `${latitude}, ${longitude}`;
+                    
+                    try {
+                        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const data = await resp.json();
+                        currentAddress = data.display_name || currentLocation;
+                    } catch(e) {
+                        currentAddress = currentLocation;
+                    }
+                    
+                    document.getElementById('locationArea').classList.add('location-detected');
+                    document.getElementById('locationText').innerHTML = '✅ Location Detected!';
+                    document.getElementById('locationSubtext').innerHTML = currentAddress.substring(0, 60);
+                },
+                (error) => {
+                    updateGpsUI('off', 'GPS is OFF');
+                    document.getElementById('locationText').innerHTML = '⚠️ GPS is OFF';
+                    document.getElementById('locationSubtext').innerHTML = 'Turn on location to auto-detect';
+                    document.getElementById('gpsGuide').classList.add('show');
+                }
+            );
+        }
+
+        function updateGpsUI(status, message) {
+            const div = document.getElementById('gpsStatus');
+            div.classList.remove('on', 'off', 'checking');
+            div.classList.add(status);
+            document.getElementById('gpsStatusText').innerHTML = status === 'on' ? '📍 GPS: ON' : (status === 'off' ? '📍 GPS: OFF' : '📍 Checking...');
+        }
+
+        function toggleManualMode() {
+            const manualDiv = document.getElementById('manualLocation');
+            if (manualDiv.classList.contains('show')) {
+                manualDiv.classList.remove('show');
+                document.getElementById('manualToggleBtn').innerHTML = '✍️ Enter Location Manually Instead';
+                usingManualLocation = false;
+                startAutoDetection();
+            } else {
+                if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+                manualDiv.classList.add('show');
+                document.getElementById('manualToggleBtn').innerHTML = '🔄 Switch Back to Auto-Detect';
+                usingManualLocation = true;
+            }
+        }
+
+        function useManualLocation() {
+            const lat = document.getElementById('manualLat').value.trim();
+            const lng = document.getElementById('manualLng').value.trim();
+            const addr = document.getElementById('manualAddress').value.trim();
+            
+            if (!lat || !lng) {
+                alert('Enter latitude and longitude');
+                return;
+            }
+            
+            currentLocation = `${lat}, ${lng}`;
+            currentAddress = addr || `Manual: ${lat}, ${lng}`;
+            document.getElementById('locationArea').classList.add('location-detected');
+            document.getElementById('locationText').innerHTML = '✅ Manual Location Set';
+            document.getElementById('locationSubtext').innerHTML = currentAddress.substring(0, 60);
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const name = document.getElementById('techName').value.trim();
+            if (!name) {
+                alert('Enter your name');
+                return;
+            }
+            if (!currentLocation) {
+                alert('No location detected! Turn on GPS or use manual entry');
+                return;
+            }
+            
+            attendanceRecords.push({
+                id: Date.now(),
+                name: name,
+                location: currentLocation,
+                address: currentAddress,
+                timestamp: new Date().toISOString(),
+                time: new Date().toLocaleString(),
+                method: usingManualLocation ? 'Manual Entry' : 'Auto GPS'
+            });
+            saveAttendanceRecords();
+            
+            document.getElementById('statusCard').className = 'status-card success';
+            document.getElementById('statusCard').innerHTML = `✅ Attendance marked for ${name}!`;
+            setTimeout(() => {
+                document.getElementById('statusCard').style.display = 'none';
+                document.getElementById('statusCard').className = 'status-card';
+            }, 3000);
+            
+            if (confirm('Clear for next technician?')) {
+                document.getElementById('techName').value = '';
+                if (!usingManualLocation) {
+                    currentLocation = null;
+                    document.getElementById('locationArea').classList.remove('location-detected');
+                    document.getElementById('locationText').innerHTML = 'Waiting for GPS...';
+                }
+            }
+        });
+
+        loadAttendanceRecords();
+        startAutoDetection();
+    </script>
+</body>
+</html>
