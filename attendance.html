@@ -41,6 +41,40 @@
             font-size: 14px;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* GPS Status */
         .gps-status {
             background: #f8f9fa;
             border-radius: 10px;
@@ -234,6 +268,149 @@
         .enable-gps-guide.show {
             display: block;
         }
+
+        /* Report Styles */
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-filter input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn-report {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-report.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-export {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-export.csv {
+            background: #17a2b8;
+        }
+
+        /* PIN Modal */
+        .pin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pin-modal.show {
+            display: flex;
+        }
+
+        .pin-modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .pin-modal-content input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -241,44 +418,99 @@
         <h1>📍 Technician Attendance</h1>
         <div class="subtitle">Auto-detects location when GPS is ON</div>
 
-        <div id="gpsStatus" class="gps-status checking">
-            <div class="gps-label">
-                <span class="gps-indicator"></span>
-                <span id="gpsStatusText">Checking GPS...</span>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
+            <button class="tab" onclick="checkPinAndOpenReport()">📊 View Report</button>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendanceTab" class="tab-content active">
+            <div id="gpsStatus" class="gps-status checking">
+                <div class="gps-label">
+                    <span class="gps-indicator"></span>
+                    <span id="gpsStatusText">Checking GPS...</span>
+                </div>
+                <div id="gpsMessage">Please wait...</div>
             </div>
-            <div id="gpsMessage">Please wait...</div>
+
+            <div class="form-group">
+                <label>👤 Technician Name:</label>
+                <input type="text" id="techName" placeholder="Enter your full name">
+            </div>
+
+            <div id="locationArea" class="location-area">
+                <span class="location-icon">📍</span>
+                <div class="location-text" id="locationText">Waiting for GPS...</div>
+                <div class="location-subtext" id="locationSubtext">Turn ON location to auto-detect</div>
+                <div class="auto-detect-badge">⚡ Auto-Detect Active</div>
+            </div>
+
+            <div class="manual-toggle">
+                <button class="manual-toggle-btn" onclick="toggleManualMode()">✍️ Enter Location Manually Instead</button>
+            </div>
+
+            <div id="manualLocation" class="manual-location">
+                <label>📍 Enter Location Manually:</label>
+                <input type="text" id="manualLat" placeholder="Latitude (e.g., 28.6139)">
+                <input type="text" id="manualLng" placeholder="Longitude (e.g., 77.2090)">
+                <input type="text" id="manualAddress" placeholder="Address or Site Name">
+                <button class="retry-btn" onclick="useManualLocation()">✓ Use Manual Location</button>
+            </div>
+
+            <div class="button-area">
+                <button class="submit-btn" id="submitBtn">✅ SUBMIT ATTENDANCE</button>
+            </div>
+
+            <div id="statusCard" class="status-card"></div>
+            <div id="gpsGuide" class="enable-gps-guide"></div>
         </div>
 
-        <div class="form-group">
-            <label>👤 Technician Name:</label>
-            <input type="text" id="techName" placeholder="Enter your full name">
-        </div>
+        <!-- Report Tab -->
+        <div id="reportTab" class="tab-content">
+            <div class="report-header">
+                <h2>📋 Daily Attendance Report</h2>
+                <div class="date-filter">
+                    <input type="date" id="reportDate" onchange="loadReport()">
+                    <button class="btn-report primary" onclick="loadReport()">Load</button>
+                </div>
+            </div>
 
-        <div id="locationArea" class="location-area">
-            <span class="location-icon">📍</span>
-            <div class="location-text" id="locationText">Waiting for GPS...</div>
-            <div class="location-subtext" id="locationSubtext">Turn ON location to auto-detect</div>
-            <div class="auto-detect-badge">⚡ Auto-Detect Active</div>
-        </div>
+            <div class="export-buttons">
+                <button class="btn-export" onclick="exportToExcel()">📊 Excel</button>
+                <button class="btn-export csv" onclick="exportToCSV()">📄 CSV</button>
+                <button class="btn-export" onclick="printReport()" style="background:#dc3545">🖨️ Print</button>
+            </div>
 
-        <div class="manual-toggle">
-            <button class="manual-toggle-btn" onclick="toggleManualMode()">✍️ Enter Location Manually Instead</button>
-        </div>
+            <div class="stats" id="statsContainer"></div>
 
-        <div id="manualLocation" class="manual-location">
-            <label>📍 Enter Location Manually:</label>
-            <input type="text" id="manualLat" placeholder="Latitude (e.g., 28.6139)">
-            <input type="text" id="manualLng" placeholder="Longitude (e.g., 77.2090)">
-            <input type="text" id="manualAddress" placeholder="Address or Site Name">
-            <button class="retry-btn" onclick="useManualLocation()">✓ Use Manual Location</button>
+            <div class="table-container">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Technician Name</th>
+                            <th>Date & Time</th>
+                            <th>Location</th>
+                            <th>Address</th>
+                            <th>Method</th>
+                        </thead>
+                    <tbody id="reportBody">
+                        <tr><td colspan="6" style="text-align:center">No records found</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+    </div>
 
-        <div class="button-area">
-            <button class="submit-btn" id="submitBtn">✅ SUBMIT ATTENDANCE</button>
+    <!-- PIN Modal -->
+    <div id="pinModal" class="pin-modal">
+        <div class="pin-modal-content">
+            <h3>🔐 Enter PIN to Access Report</h3>
+            <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="5">
+            <button class="submit-btn" onclick="verifyPin()" style="padding: 10px;">Verify</button>
+            <button class="btn-report" onclick="closePinModal()" style="margin-top: 10px;">Cancel</button>
         </div>
-
-        <div id="statusCard" class="status-card"></div>
-        <div id="gpsGuide" class="enable-gps-guide"></div>
     </div>
 
     <script>
@@ -287,6 +519,7 @@
         let usingManualLocation = false;
         let attendanceRecords = [];
         let gpsWatchId = null;
+        const CORRECT_PIN = "20000";
 
         function loadAttendanceRecords() {
             const saved = localStorage.getItem('attendanceRecords');
@@ -295,6 +528,156 @@
 
         function saveAttendanceRecords() {
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (tabName === 'attendance') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('attendanceTab').classList.add('active');
+            }
+        }
+
+        function checkPinAndOpenReport() {
+            document.getElementById('pinModal').classList.add('show');
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('show');
+        }
+
+        function verifyPin() {
+            const enteredPin = document.getElementById('pinInput').value;
+            if (enteredPin === CORRECT_PIN) {
+                closePinModal();
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('reportTab').classList.add('active');
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('reportDate').value = today;
+                loadReport();
+            } else {
+                alert('❌ Incorrect PIN! Access denied.');
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinInput').focus();
+            }
+        }
+
+        function loadReport() {
+            const selectedDate = document.getElementById('reportDate').value;
+            if (!selectedDate) return;
+            
+            const filteredRecords = attendanceRecords.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate === selectedDate;
+            });
+            
+            displayReport(filteredRecords, selectedDate);
+            displayStats(filteredRecords);
+        }
+
+        function displayReport(records, date) {
+            const reportBody = document.getElementById('reportBody');
+            if (records.length === 0) {
+                reportBody.innerHTML = `<tr><td colspan="6" style="text-align:center">No attendance records for ${date}</td></tr>`;
+                return;
+            }
+            
+            reportBody.innerHTML = records.map((record, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${escapeHtml(record.name)}</strong></td>
+                    <td>${record.time}</td>
+                    <td>${record.location}</td>
+                    <td>${escapeHtml(record.address || 'N/A').substring(0, 40)}</td>
+                    <td><span style="background:${record.method === 'Auto GPS' ? '#d4edda' : '#fff3cd'}; padding:3px 8px; border-radius:5px; font-size:11px;">${record.method}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function displayStats(records) {
+            const statsContainer = document.getElementById('statsContainer');
+            const totalCount = records.length;
+            const autoCount = records.filter(r => r.method === 'Auto GPS').length;
+            const manualCount = records.filter(r => r.method === 'Manual Entry').length;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card"><h3>📊 Total Attendees</h3><div class="number">${totalCount}</div></div>
+                <div class="stat-card"><h3>📍 Auto GPS</h3><div class="number">${autoCount}</div></div>
+                <div class="stat-card"><h3>✍️ Manual Entry</h3><div class="number">${manualCount}</div></div>
+            `;
+        }
+
+        function exportToExcel() {
+            const selectedDate = document.getElementById('reportDate').value;
+            const table = document.getElementById('reportTable');
+            const html = table.outerHTML;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `attendance_report_${selectedDate}.xls`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function exportToCSV() {
+            const selectedDate = document.getElementById('reportDate').value;
+            const records = attendanceRecords.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate === selectedDate;
+            });
+            
+            if (records.length === 0) {
+                alert('No records to export!');
+                return;
+            }
+            
+            const headers = ['Sl No', 'Technician Name', 'Date & Time', 'Location', 'Address', 'Method'];
+            const csvRows = [headers];
+            records.forEach((record, index) => {
+                csvRows.push([index + 1, record.name, record.time, record.location, record.address || 'N/A', record.method]);
+            });
+            
+            const csvContent = csvRows.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `attendance_report_${selectedDate}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function printReport() {
+            const selectedDate = document.getElementById('reportDate').value;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head><title>Attendance Report - ${selectedDate}</title>
+                <style>
+                    body { font-family: Arial; padding: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background: #667eea; color: white; }
+                </style>
+                </head>
+                <body>
+                    <h1>Technician Attendance Report</h1>
+                    <p>Date: ${selectedDate}</p>
+                    ${document.getElementById('statsContainer').innerHTML}
+                    ${document.getElementById('reportTable').outerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function startAutoDetection() {
