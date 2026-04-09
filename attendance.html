@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Technician Attendance System</title>
+    
+    <title>Attendance System - Designed by Rishabh</title>
+    
+    <meta property="og:title" content="Attendance System - Designed by Rishabh">
+    <meta property="og:description" content="Secure Attendance System - Anti-Cheat Protection">
+    <meta name="author" content="Rishabh">
+    
     <style>
         * {
             margin: 0;
@@ -41,7 +47,44 @@
             font-size: 14px;
         }
 
-        /* Tabs */
+        .security-badge {
+            background: #e7f3ff;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #004085;
+        }
+
+        .device-lock-warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .device-lock-warning.show {
+            display: block;
+        }
+
+        .already-marked-device {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        .already-marked-device.show {
+            display: block;
+        }
+
         .tabs {
             display: flex;
             gap: 10px;
@@ -74,7 +117,6 @@
             display: block;
         }
 
-        /* GPS Status */
         .gps-status {
             background: #f8f9fa;
             border-radius: 10px;
@@ -151,6 +193,11 @@
             border-color: #667eea;
         }
 
+        input[type="text"]:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+
         .location-area {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 15px;
@@ -162,6 +209,12 @@
 
         .location-area.location-detected {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .location-area.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .location-icon {
@@ -205,6 +258,12 @@
             text-decoration: underline;
         }
 
+        .manual-toggle-btn:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
         .manual-location {
             display: none;
             margin: 15px 0;
@@ -225,6 +284,10 @@
             border-radius: 5px;
         }
 
+        .manual-location input:disabled {
+            background: #f0f0f0;
+        }
+
         .button-area {
             text-align: center;
             margin-top: 20px;
@@ -242,6 +305,11 @@
             width: 100%;
         }
 
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .status-card {
             margin-top: 20px;
             padding: 15px;
@@ -253,6 +321,20 @@
             background: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
+            display: block;
+        }
+
+        .status-card.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .status-card.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
             display: block;
         }
 
@@ -269,7 +351,6 @@
             display: block;
         }
 
-        /* Report Styles */
         .report-header {
             display: flex;
             justify-content: space-between;
@@ -375,7 +456,6 @@
             background: #17a2b8;
         }
 
-        /* PIN Modal */
         .pin-modal {
             display: none;
             position: fixed;
@@ -411,20 +491,62 @@
             border: 2px solid #ddd;
             border-radius: 8px;
         }
+
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .cheat-detected {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .cheat-detected.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📍 Technician Attendance</h1>
-        <div class="subtitle">Auto-detects location when GPS is ON</div>
+        <h1>📍 Technician Attendance System</h1>
+        <div class="subtitle">Designed by Rishabh | Secure Anti-Cheat System</div>
+        
+        <div class="security-badge">
+            🔒 Secure System | One Device = One Attendance | Anti-Cheat Protected
+        </div>
 
-        <!-- Tabs -->
+        <div id="deviceLockWarning" class="device-lock-warning">
+            <div class="icon">🚫</div>
+            <h3>⚠️ Attendance Already Marked From This Device!</h3>
+            <p id="deviceLockMessage">This device has already been used to mark attendance today.</p>
+            <p style="margin-top: 10px; font-size: 13px;">Each device can mark attendance only ONCE per day.<br>Please use your own device to mark your attendance.</p>
+        </div>
+
+        <div id="alreadyMarkedDevice" class="already-marked-device">
+            <div class="icon">✅</div>
+            <h3>Attendance Already Recorded</h3>
+            <p id="alreadyMarkedMessage"></p>
+        </div>
+
+        <div id="cheatDetected" class="cheat-detected">
+            ⚠️ Security Alert! Unauthorized activity detected. This incident has been logged.
+        </div>
+
         <div class="tabs">
             <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
             <button class="tab" onclick="checkPinAndOpenReport()">📊 View Report</button>
         </div>
 
-        <!-- Attendance Tab -->
         <div id="attendanceTab" class="tab-content active">
             <div id="gpsStatus" class="gps-status checking">
                 <div class="gps-label">
@@ -436,7 +558,7 @@
 
             <div class="form-group">
                 <label>👤 Technician Name:</label>
-                <input type="text" id="techName" placeholder="Enter your full name">
+                <input type="text" id="techName" placeholder="Enter your full name" autocomplete="off">
             </div>
 
             <div id="locationArea" class="location-area">
@@ -447,7 +569,7 @@
             </div>
 
             <div class="manual-toggle">
-                <button class="manual-toggle-btn" onclick="toggleManualMode()">✍️ Enter Location Manually Instead</button>
+                <button class="manual-toggle-btn" onclick="toggleManualMode()" id="manualToggleBtn">✍️ Enter Location Manually Instead</button>
             </div>
 
             <div id="manualLocation" class="manual-location">
@@ -464,9 +586,11 @@
 
             <div id="statusCard" class="status-card"></div>
             <div id="gpsGuide" class="enable-gps-guide"></div>
+            <div class="info-text">
+                ℹ️ <strong>Security Features:</strong> One device = One attendance | GPS Location Required | Anti-Cheat Protection
+            </div>
         </div>
 
-        <!-- Report Tab -->
         <div id="reportTab" class="tab-content">
             <div class="report-header">
                 <h2>📋 Daily Attendance Report</h2>
@@ -494,16 +618,16 @@
                             <th>Location</th>
                             <th>Address</th>
                             <th>Method</th>
+                            <th>Device Fingerprint</th>
                         </thead>
                     <tbody id="reportBody">
-                        <tr><td colspan="6" style="text-align:center">No records found</td></tr>
+                        <tr><td colspan="7" style="text-align:center">No records found</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- PIN Modal -->
     <div id="pinModal" class="pin-modal">
         <div class="pin-modal-content">
             <h3>🔐 Enter PIN to Access Report</h3>
@@ -519,11 +643,163 @@
         let usingManualLocation = false;
         let attendanceRecords = [];
         let gpsWatchId = null;
+        let cheatAttempts = [];
         const CORRECT_PIN = "20000";
+
+        // ========== ADVANCED FINGERPRINTING ==========
+        
+        // Generate a unique browser fingerprint
+        function getBrowserFingerprint() {
+            const screenData = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const language = navigator.language;
+            const platform = navigator.platform;
+            const userAgent = navigator.userAgent;
+            const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
+            const deviceMemory = navigator.deviceMemory || 'unknown';
+            
+            // Create a hash from all these values
+            const fingerprintData = `${screenData}|${timezone}|${language}|${platform}|${userAgent.substring(0, 50)}|${hardwareConcurrency}|${deviceMemory}`;
+            
+            // Simple hash function
+            let hash = 0;
+            for (let i = 0; i < fingerprintData.length; i++) {
+                hash = ((hash << 5) - hash) + fingerprintData.charCodeAt(i);
+                hash = hash & hash;
+            }
+            
+            return `FP_${Math.abs(hash).toString(16)}`;
+        }
+
+        // Check if incognito/private mode
+        function isIncognitoMode() {
+            return new Promise((resolve) => {
+                const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
+                if (!fs) {
+                    resolve(false);
+                } else {
+                    fs(window.TEMPORARY, 100, () => resolve(false), () => resolve(true));
+                }
+            });
+        }
+
+        // Get IP address (using free API)
+        async function getIPAddress() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (e) {
+                return 'unknown';
+            }
+        }
+
+        // Main Device ID with multiple layers
+        let masterDeviceId = null;
+        let deviceFingerprint = null;
+        let deviceIP = null;
+
+        async function initializeDeviceId() {
+            deviceFingerprint = getBrowserFingerprint();
+            deviceIP = await getIPAddress();
+            
+            // Try to get existing device ID
+            let storedId = localStorage.getItem('masterDeviceId');
+            let storedFingerprint = localStorage.getItem('deviceFingerprint');
+            let storedIP = localStorage.getItem('deviceIP');
+            
+            // Check if fingerprint changed (possible cheat)
+            if (storedId && storedFingerprint && storedFingerprint !== deviceFingerprint) {
+                logCheatAttempt('Fingerprint mismatch - possible cookie/browser data cleared');
+                document.getElementById('cheatDetected').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('cheatDetected').classList.remove('show');
+                }, 5000);
+            }
+            
+            if (storedId && storedFingerprint === deviceFingerprint) {
+                masterDeviceId = storedId;
+            } else {
+                masterDeviceId = `DEV_${Date.now()}_${deviceFingerprint.substring(0, 8)}`;
+                localStorage.setItem('masterDeviceId', masterDeviceId);
+                localStorage.setItem('deviceFingerprint', deviceFingerprint);
+                localStorage.setItem('deviceIP', deviceIP);
+            }
+            
+            return masterDeviceId;
+        }
+
+        function logCheatAttempt(reason) {
+            const attempt = {
+                timestamp: new Date().toISOString(),
+                reason: reason,
+                fingerprint: deviceFingerprint,
+                ip: deviceIP
+            };
+            cheatAttempts.push(attempt);
+            localStorage.setItem('cheatAttempts', JSON.stringify(cheatAttempts));
+        }
+
+        // Check if THIS DEVICE has already marked attendance today
+        function hasDeviceMarkedToday() {
+            const today = new Date().toISOString().split('T')[0];
+            const currentDeviceId = masterDeviceId;
+            
+            const deviceRecord = attendanceRecords.find(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return record.deviceId === currentDeviceId && recordDate === today;
+            });
+            
+            return deviceRecord || null;
+        }
+
+        // Check device lock status and update UI
+        async function checkDeviceLockAndUpdateUI() {
+            await initializeDeviceId();
+            
+            const deviceRecord = hasDeviceMarkedToday();
+            const deviceLockWarning = document.getElementById('deviceLockWarning');
+            const alreadyMarkedDevice = document.getElementById('alreadyMarkedDevice');
+            const techNameInput = document.getElementById('techName');
+            const submitBtn = document.getElementById('submitBtn');
+            const locationArea = document.getElementById('locationArea');
+            const manualToggleBtn = document.getElementById('manualToggleBtn');
+            
+            if (deviceRecord) {
+                deviceLockWarning.classList.add('show');
+                alreadyMarkedDevice.classList.add('show');
+                document.getElementById('alreadyMarkedMessage').innerHTML = `
+                    You have already marked attendance for <strong>${deviceRecord.name}</strong> at ${deviceRecord.time}<br>
+                    📍 Location: ${deviceRecord.location}<br><br>
+                    <span style="font-size: 12px;">This device cannot be used for another attendance today.</span>
+                `;
+                
+                techNameInput.disabled = true;
+                techNameInput.placeholder = "Device already used today";
+                submitBtn.disabled = true;
+                locationArea.classList.add('disabled');
+                manualToggleBtn.disabled = true;
+                
+                return true;
+            } else {
+                deviceLockWarning.classList.remove('show');
+                alreadyMarkedDevice.classList.remove('show');
+                techNameInput.disabled = false;
+                techNameInput.placeholder = "Enter your full name";
+                submitBtn.disabled = false;
+                locationArea.classList.remove('disabled');
+                manualToggleBtn.disabled = false;
+                
+                return false;
+            }
+        }
 
         function loadAttendanceRecords() {
             const saved = localStorage.getItem('attendanceRecords');
             if (saved) attendanceRecords = JSON.parse(saved);
+            
+            const savedCheats = localStorage.getItem('cheatAttempts');
+            if (savedCheats) cheatAttempts = JSON.parse(savedCheats);
         }
 
         function saveAttendanceRecords() {
@@ -581,7 +857,7 @@
         function displayReport(records, date) {
             const reportBody = document.getElementById('reportBody');
             if (records.length === 0) {
-                reportBody.innerHTML = `<tr><td colspan="6" style="text-align:center">No attendance records for ${date}</td></tr>`;
+                reportBody.innerHTML = `<tr><td colspan="7" style="text-align:center">No attendance records for ${date}</td></tr>`;
                 return;
             }
             
@@ -593,6 +869,7 @@
                     <td>${record.location}</td>
                     <td>${escapeHtml(record.address || 'N/A').substring(0, 40)}</td>
                     <td><span style="background:${record.method === 'Auto GPS' ? '#d4edda' : '#fff3cd'}; padding:3px 8px; border-radius:5px; font-size:11px;">${record.method}</span></td>
+                    <td style="font-size:10px; color:#666;">${record.deviceId ? record.deviceId.substring(0, 20) + '...' : 'N/A'}</td>
                 </tr>
             `).join('');
         }
@@ -634,10 +911,10 @@
                 return;
             }
             
-            const headers = ['Sl No', 'Technician Name', 'Date & Time', 'Location', 'Address', 'Method'];
+            const headers = ['Sl No', 'Technician Name', 'Date & Time', 'Location', 'Address', 'Method', 'Device ID', 'Fingerprint'];
             const csvRows = [headers];
             records.forEach((record, index) => {
-                csvRows.push([index + 1, record.name, record.time, record.location, record.address || 'N/A', record.method]);
+                csvRows.push([index + 1, record.name, record.time, record.location, record.address || 'N/A', record.method, record.deviceId, record.fingerprint || 'N/A']);
             });
             
             const csvContent = csvRows.map(row => row.join(',')).join('\n');
@@ -768,17 +1045,43 @@
             }, 3000);
         }
 
-        document.getElementById('submitBtn').addEventListener('click', () => {
-            const name = document.getElementById('techName').value.trim();
-            if (!name) {
-                alert('Please enter technician name');
-                return;
-            }
-            if (!currentLocation) {
-                alert('No location detected! Please turn ON GPS or use manual entry');
+        // Submit attendance with MULTI-LAYER security check
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            // LAYER 1: Check if device already marked today
+            const deviceAlreadyMarked = hasDeviceMarkedToday();
+            
+            if (deviceAlreadyMarked) {
+                showStatus(`❌ This device has already marked attendance for ${deviceAlreadyMarked.name}. One device per day only!`, 'warning');
+                logCheatAttempt('Attempted multiple attendance from same device');
                 return;
             }
             
+            const name = document.getElementById('techName').value.trim();
+            
+            if (!name) {
+                showStatus('❌ Please enter technician name!', 'error');
+                return;
+            }
+            
+            if (!currentLocation) {
+                showStatus('❌ No location detected! Please turn ON GPS or use manual entry.', 'error');
+                return;
+            }
+            
+            // LAYER 2: Check if same person already marked from any device today
+            const today = new Date().toISOString().split('T')[0];
+            const personAlreadyMarked = attendanceRecords.some(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return record.name.toLowerCase() === name.toLowerCase() && recordDate === today;
+            });
+            
+            if (personAlreadyMarked) {
+                showStatus(`❌ ${name} has already marked attendance today from another device!`, 'warning');
+                logCheatAttempt(`Attempted duplicate attendance for ${name}`);
+                return;
+            }
+            
+            // All checks passed - record attendance
             const record = {
                 id: Date.now(),
                 name: name,
@@ -786,7 +1089,10 @@
                 address: currentAddress,
                 timestamp: new Date().toISOString(),
                 time: new Date().toLocaleString(),
-                method: usingManualLocation ? 'Manual Entry' : 'Auto GPS'
+                method: usingManualLocation ? 'Manual Entry' : 'Auto GPS',
+                deviceId: masterDeviceId,
+                fingerprint: deviceFingerprint,
+                ipAddress: deviceIP
             };
             
             attendanceRecords.push(record);
@@ -794,22 +1100,32 @@
             
             showStatus(`✅ Attendance marked for ${name} at ${record.time}`, 'success');
             
+            // Lock the device immediately
+            await checkDeviceLockAndUpdateUI();
+            
+            // Clear the name field
             setTimeout(() => {
-                if (confirm('Clear form for next technician?')) {
-                    document.getElementById('techName').value = '';
-                    if (!usingManualLocation) {
-                        currentLocation = null;
-                        currentAddress = null;
-                        document.getElementById('locationArea').classList.remove('location-detected');
-                        document.getElementById('locationText').innerHTML = 'Waiting for GPS...';
-                        document.getElementById('locationSubtext').innerHTML = 'Turn ON location to auto-detect';
-                    }
-                }
-            }, 500);
+                document.getElementById('techName').value = '';
+            }, 1000);
         });
 
-        loadAttendanceRecords();
-        startAutoDetection();
+        // Initialize everything
+        async function init() {
+            loadAttendanceRecords();
+            await initializeDeviceId();
+            await checkDeviceLockAndUpdateUI();
+            startAutoDetection();
+            
+            // Check for incognito mode
+            const incognito = await isIncognitoMode();
+            if (incognito) {
+                document.getElementById('cheatDetected').innerHTML = '⚠️ Private/Incognito mode detected. Please use normal mode for attendance.';
+                document.getElementById('cheatDetected').classList.add('show');
+                logCheatAttempt('Incognito mode detected');
+            }
+        }
+        
+        init();
     </script>
 </body>
 </html>
