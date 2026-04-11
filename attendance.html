@@ -1,1057 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Technician Attendance System - Central Database</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .central-badge {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 8px 15px;
-            font-size: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .attendance-form {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .gps-status {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-left: 4px solid #dc3545;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .gps-status.on {
-            border-left-color: #28a745;
-            background: #d4edda;
-        }
-
-        .gps-status.off {
-            border-left-color: #dc3545;
-            background: #f8d7da;
-        }
-
-        .gps-status.checking {
-            border-left-color: #ffc107;
-            background: #fff3cd;
-        }
-
-        .gps-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-
-        .gps-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #dc3545;
-            animation: pulse 2s infinite;
-        }
-
-        .gps-status.on .gps-indicator {
-            background: #28a745;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .location-area {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .location-area.location-detected {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-
-        .location-icon {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .location-text {
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .location-subtext {
-            font-size: 12px;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .auto-detect-badge {
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 5px 10px;
-            font-size: 11px;
-            display: inline-block;
-            margin-top: 8px;
-        }
-
-        .button-area {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .get-location-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .status-card {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .status-card.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            display: block;
-        }
-
-        .status-card.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            display: block;
-        }
-
-        .status-card.loading {
-            background: #e7f3ff;
-            border: 1px solid #b8daff;
-            color: #004085;
-            display: block;
-        }
-
-        .manual-toggle {
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        .manual-toggle-btn {
-            background: none;
-            border: none;
-            color: #667eea;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: underline;
-        }
-
-        .manual-location {
-            display: none;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .manual-location.show {
-            display: block;
-        }
-
-        .manual-location input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .date-range-container {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .date-range-inputs {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-
-        .date-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .date-input-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 0;
-        }
-
-        .date-input-group input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .apply-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .quick-filters {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .quick-filter-btn {
-            background: #e9ecef;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .quick-filter-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .btn-export {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-export.csv {
-            background: #17a2b8;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            margin-top: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            font-size: 13px;
-        }
-
-        th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            position: sticky;
-            top: 0;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        tr:hover {
-            background: #f5f5f5;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-size: 12px;
-            margin-bottom: 5px;
-            opacity: 0.9;
-        }
-
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .pin-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .pin-modal.show {
-            display: flex;
-        }
-
-        .pin-modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 300px;
-            width: 90%;
-        }
-
-        .pin-modal-content input {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-            text-align: center;
-            margin: 15px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-        }
-
-        .info-text {
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            th, td {
-                font-size: 10px;
-                padding: 6px;
-            }
-            .date-range-inputs {
-                flex-direction: column;
-                width: 100%;
-            }
-            .date-input-group {
-                width: 100%;
-            }
-            .date-input-group input {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IFB Appliances – Technician Attendance</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f5f5f5;--card:#fff;--border:#e0e0e0;--text:#1a1a1a;--muted:#666;
+    --primary:#1565C0;--primary-dk:#0D47A1;--success:#2E7D32;--danger:#C62828;
+    --info-bg:#E3F2FD;--info-text:#0D47A1;--success-bg:#E8F5E9;--success-text:#1B5E20;
+    --warn-bg:#FFF8E1;--warn-text:#F57F17;--red-bg:#FFEBEE;--red-text:#B71C1C;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .screen{display:none}.screen.active{display:block}
+
+  .topbar{background:var(--primary);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+  .topbar-logo{width:36px;height:36px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .topbar-logo span{font-size:13px;font-weight:700;color:var(--primary)}
+  .topbar-title p{font-size:16px;font-weight:600;line-height:1.2}
+  .topbar-title small{font-size:11px;opacity:0.8}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+  .card-body{padding:20px}
+  .card-header{padding:14px 20px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:8px;border:none;font-size:15px;font-weight:500;cursor:pointer;transition:background 0.15s,transform 0.1s;width:100%}
+  .btn:active{transform:scale(0.98)}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dk)}
+  .btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}.btn-outline:hover{background:var(--info-bg)}
+  .btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#1B5E20}
+  .btn-danger{background:var(--danger);color:#fff;padding:7px 14px;font-size:13px;border-radius:6px;width:auto}.btn-danger:hover{background:#B71C1C}
+  .btn-warn{background:#E65100;color:#fff;font-size:13px;border-radius:6px;width:auto;padding:7px 14px;border:none;cursor:pointer}.btn-warn:hover{background:#BF360C}
+  .btn-sm{padding:7px 14px;font-size:13px;border-radius:6px;width:auto}
+
+  .form-group{margin-bottom:16px}
+  label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+  input[type=text],input[type=tel],input[type=date]{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;color:var(--text);background:#fff;transition:border 0.15s}
+  input:focus{outline:none;border-color:var(--primary)}
+
+  .loc-box{border:1.5px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:#fafafa}
+  .loc-box:hover{border-color:var(--primary);background:var(--info-bg)}
+  .loc-box.captured{border-style:solid;border-color:#2E7D32;background:var(--success-bg);cursor:default}
+  .loc-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center}
+  .stat-val{font-size:26px;font-weight:700;color:var(--primary)}
+  .stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:750px}
+  th{background:#f5f5f5;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafafa}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-blue{background:var(--info-bg);color:var(--info-text)}
+  .badge-green{background:var(--success-bg);color:var(--success-text)}
+  .badge-red{background:var(--red-bg);color:var(--red-text)}
+
+  .pin-dots{display:flex;gap:14px;justify-content:center;margin:20px 0 8px}
+  .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all 0.2s}
+  .pin-dot.filled{background:var(--primary);border-color:var(--primary)}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:240px;margin:16px auto 0}
+  .num-btn{padding:16px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:20px;font-weight:500;cursor:pointer;text-align:center;transition:background 0.1s}
+  .num-btn:hover{background:#f0f0f0}.num-btn:active{transform:scale(0.96)}
+  .num-ok{background:var(--primary);color:#fff;border-color:var(--primary)}.num-ok:hover{background:var(--primary-dk)}
+
+  .success-circle{width:64px;height:64px;border-radius:50%;background:var(--success-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pop .4s ease}
+  .blocked-circle{width:64px;height:64px;border-radius:50%;background:var(--red-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+
+  @keyframes pop{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+  .home-hero{text-align:center;padding:32px 20px 20px}
+  .home-hero h1{font-size:22px;font-weight:700;margin-bottom:6px}
+  .home-hero p{font-size:14px;color:var(--muted);margin-bottom:24px}
+  .home-btns{display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto}
+  .live-badge{display:inline-flex;align-items:center;gap:6px;background:var(--success-bg);color:var(--success-text);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:16px}
+  .dot-pulse{width:8px;height:8px;border-radius:50%;background:#2E7D32;animation:blink 1.4s infinite}
+
+  .nav-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .back-btn{display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 0}
+  .back-btn:hover{color:var(--text)}
+  .nav-title{font-size:16px;font-weight:600}
+
+  .page-body{padding:16px;max-width:520px;margin:0 auto}
+  .page-center{text-align:center;padding:32px 20px;max-width:400px;margin:0 auto}
+  .map-link{color:var(--primary);text-decoration:none;font-size:12px;font-weight:500}
+  .map-link:hover{text-decoration:underline}
+  .empty-state{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px}
+
+  .blocked-banner{background:var(--red-bg);border:1px solid #EF9A9A;border-radius:10px;padding:18px;text-align:left;margin-bottom:16px}
+  .blocked-banner h3{color:var(--red-text);font-size:15px;margin-bottom:8px}
+  .blocked-banner p{color:#C62828;font-size:13px;line-height:1.7}
+
+  .filter-bar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:#fafafa;align-items:center}
+  .filter-bar input[type=text]{flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:#fff}
+  .filter-bar input[type=date]{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:#fff;width:auto}
+  .filter-bar select{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:#fff}
+
+  @media(max-width:400px){
+    .stats-grid{grid-template-columns:repeat(2,1fr)}
+    .stat-card:last-child{grid-column:span 2}
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>📍 Technician Attendance System</h1>
-        <div class="subtitle">Designed by Rishabh | Central Database | All Devices Share Data</div>
-        
-        <div class="central-badge">
-            ☁️ CENTRAL DATABASE ACTIVE | ALL ATTENDANCE DATA IN ONE PLACE
-        </div>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('attendance')">📝 Mark Attendance</button>
-            <button class="tab" onclick="checkPinAndOpenReport()">📊 View Report</button>
-        </div>
+<div class="topbar">
+  <div class="topbar-logo"><span>IFB</span></div>
+  <div class="topbar-title">
+    <p>IFB Appliances</p>
+    <small>Technician Attendance Portal</small>
+  </div>
+</div>
 
-        <!-- Attendance Tab -->
-        <div id="attendanceTab" class="tab-content active">
-            <div class="attendance-form">
-                <div id="gpsStatus" class="gps-status checking">
-                    <div class="gps-label">
-                        <span class="gps-indicator"></span>
-                        <span id="gpsStatusText">📍 GPS Ready</span>
-                    </div>
-                    <div id="gpsMessage">Click the button below to get your location</div>
-                </div>
-
-                <div class="form-group">
-                    <label>👤 Technician Name:</label>
-                    <input type="text" id="techName" placeholder="Enter your full name">
-                </div>
-
-                <div class="button-area">
-                    <button class="get-location-btn" id="getLocationBtn">📍 GET MY LOCATION</button>
-                </div>
-
-                <div id="locationArea" class="location-area">
-                    <span class="location-icon">📍</span>
-                    <div class="location-text" id="locationText">No Location Yet</div>
-                    <div class="location-subtext" id="locationSubtext">Click "GET MY LOCATION" button above</div>
-                    <div class="auto-detect-badge">⚡ Click button to get location</div>
-                </div>
-
-                <div class="manual-toggle">
-                    <button class="manual-toggle-btn" onclick="toggleManualMode()">✍️ Enter Location Manually Instead</button>
-                </div>
-
-                <div id="manualLocation" class="manual-location">
-                    <label>📍 Enter Location Manually:</label>
-                    <input type="text" id="manualLat" placeholder="Latitude (e.g., 28.6139)">
-                    <input type="text" id="manualLng" placeholder="Longitude (e.g., 77.2090)">
-                    <input type="text" id="manualAddress" placeholder="Address or Site Name">
-                    <button class="submit-btn" onclick="useManualLocation()" style="padding: 10px; margin-top: 10px;">✓ Use Manual Location</button>
-                </div>
-
-                <div class="button-area">
-                    <button class="submit-btn" id="submitBtn">✅ SUBMIT ATTENDANCE</button>
-                </div>
-
-                <div id="statusCard" class="status-card"></div>
-                <div class="info-text">
-                    ℹ️ <strong>Central System:</strong> Your attendance is saved to Google Sheet. Viewable from any device.
-                </div>
-            </div>
-        </div>
-
-        <!-- Report Tab -->
-        <div id="reportTab" class="tab-content">
-            <div class="date-range-container">
-                <div class="date-range-inputs">
-                    <div class="date-input-group">
-                        <label>From Date:</label>
-                        <input type="date" id="fromDate">
-                    </div>
-                    <div class="date-input-group">
-                        <label>To Date:</label>
-                        <input type="date" id="toDate">
-                    </div>
-                    <button class="apply-btn" onclick="loadReport()">🔍 Apply Filter</button>
-                    <button class="apply-btn" onclick="refreshReport()" style="background:#28a745;">🔄 Refresh</button>
-                </div>
-                <div class="quick-filters">
-                    <button class="quick-filter-btn" onclick="setToday()">Today</button>
-                    <button class="quick-filter-btn" onclick="setYesterday()">Yesterday</button>
-                    <button class="quick-filter-btn" onclick="setThisWeek()">This Week</button>
-                    <button class="quick-filter-btn" onclick="setThisMonth()">This Month</button>
-                    <button class="quick-filter-btn" onclick="clearFilters()">Show All</button>
-                </div>
-            </div>
-
-            <div class="export-buttons">
-                <button class="btn-export" onclick="exportToExcel()">📊 Export Excel</button>
-                <button class="btn-export csv" onclick="exportToCSV()">📄 Export CSV</button>
-            </div>
-
-            <div class="stats" id="statsContainer"></div>
-
-            <div class="table-container">
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Technician Name</th>
-                            <th>Date & Time</th>
-                            <th>Location Coordinates</th>
-                            <th>Address</th>
-                            <th>Method</th>
-                        </thead>
-                    <tbody id="reportBody">
-                        <tr><td colspan="6" style="text-align:center">Loading data from central database...</td></tr>
-                    </tbody>
-                 </table>
-            </div>
-        </div>
+<!-- ══ HOME ══ -->
+<div id="home" class="screen active">
+  <div class="home-hero">
+    <div class="live-badge"><span class="dot-pulse"></span> Live System</div>
+    <h1>Field Attendance</h1>
+    <p>Technicians — tap below to mark your attendance with live location</p>
+    <div class="home-btns">
+      <button class="btn btn-primary" onclick="goCheckin()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        Mark My Attendance
+      </button>
+      <button class="btn btn-outline" onclick="go('pin')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Admin — View Reports
+      </button>
     </div>
+  </div>
+  <div id="home-stats" style="padding:0 16px 20px;max-width:520px;margin:0 auto"></div>
+</div>
 
-    <!-- PIN Modal -->
-    <div id="pinModal" class="pin-modal">
-        <div class="pin-modal-content">
-            <h3>🔐 Enter PIN to Access Report</h3>
-            <input type="password" id="pinInput" placeholder="Enter PIN" maxlength="5">
-            <button class="submit-btn" onclick="verifyPin()" style="padding: 10px;">Verify</button>
-            <button class="submit-btn" onclick="closePinModal()" style="padding: 10px; background:#6c757d; margin-top: 10px;">Cancel</button>
-        </div>
+<!-- ══ BLOCKED ══ -->
+<div id="blocked" class="screen">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+    <span class="nav-title">Already Submitted</span>
+  </div>
+  <div class="page-center" style="padding-top:40px">
+    <div class="blocked-circle">
+      <svg width="32" height="32" fill="none" stroke="#C62828" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
     </div>
+    <h2 style="font-size:20px;font-weight:700;color:var(--danger);margin-bottom:12px">Attendance Already Marked</h2>
+    <div class="blocked-banner">
+      <h3>&#128274; This device has already submitted attendance today</h3>
+      <p id="blocked-info"></p>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">To prevent proxy attendance, each device can only mark once per day. Contact your admin if this is an error.</p>
+    <button class="btn btn-outline" onclick="go('home')">Go Back</button>
+  </div>
+</div>
 
-    <script>
-        // ============================================
-        // YOUR GOOGLE SCRIPT URL IS INSERTED BELOW
-        // ============================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwieFBoWLmlz9ovO2i78hyptnMHLwmN_Eb0yB1Qi_0tKK6sdy8n9bFxFtKewwGNqByM/exec';
-        
-        let currentLocation = null;
-        let currentAddress = null;
-        let usingManualLocation = false;
-        let allRecords = [];
-        let deviceId = null;
-        const CORRECT_PIN = "20000";
+<!-- ══ CHECK-IN ══ -->
+<div id="checkin" class="screen">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+    <span class="nav-title">Mark Attendance</span>
+  </div>
+  <div class="page-body">
+    <div class="card">
+      <div class="card-body">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="f-name" placeholder="e.g. Rahul Sharma" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="f-phone" placeholder="+91 98765 43210" autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label>Device / Phone Model</label>
+          <input type="text" id="f-device" placeholder="e.g. Samsung Galaxy A54">
+        </div>
+        <div class="form-group">
+          <label>Current Location *</label>
+          <div class="loc-box" id="loc-box" onclick="getLocation()">
+            <div class="loc-icon" id="loc-icon" style="background:#EEF2FF">
+              <svg id="loc-svg" width="22" height="22" fill="none" stroke="#1565C0" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              <svg id="loc-spinner" width="22" height="22" viewBox="0 0 22 22" style="display:none;animation:spin 1s linear infinite"><circle cx="11" cy="11" r="9" fill="none" stroke="#1565C0" stroke-width="2.5" stroke-dasharray="40 20"/></svg>
+            </div>
+            <p id="loc-label" style="font-weight:600;color:#1565C0;font-size:14px">Tap to Capture Location</p>
+            <p id="loc-sub" style="font-size:12px;color:var(--muted);margin-top:4px">Chrome will ask permission — tap <strong>Allow</strong></p>
+          </div>
+          <div id="loc-denied" style="display:none;margin-top:10px;background:#FFF3E0;border:1px solid #FFB74D;border-radius:8px;padding:12px 14px;font-size:13px;color:#E65100;line-height:1.7">
+            <strong>Location blocked.</strong> Follow these steps to enable:<br>
+            1. Tap the <strong>lock / info icon</strong> in the Chrome address bar<br>
+            2. Tap <strong>Site settings</strong> → <strong>Location</strong> → set to <strong>Allow</strong><br>
+            3. Reload this page and try again
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="submitAttendance()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // Generate unique device ID
-        function getDeviceId() {
-            let id = localStorage.getItem('deviceId');
-            if (!id) {
-                id = 'DEV_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-                localStorage.setItem('deviceId', id);
-            }
-            return id;
-        }
+<!-- ══ SUCCESS ══ -->
+<div id="success" class="screen">
+  <div class="page-center" style="padding-top:48px">
+    <div class="success-circle">
+      <svg width="32" height="32" fill="none" stroke="#2E7D32" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">Attendance Marked!</h2>
+    <p id="s-msg" style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px"></p>
+    <div id="s-loc" style="margin-bottom:24px"></div>
+    <button class="btn btn-primary" onclick="go('home')">Done</button>
+  </div>
+</div>
 
-        // Get current location - Triggers Chrome permission popup
-        function getCurrentLocation() {
-            if (!navigator.geolocation) {
-                showStatus('❌ Your browser does not support geolocation', 'error');
-                return;
-            }
-            
-            showStatus('📍 Requesting location permission... Look for Chrome popup!', 'loading');
-            
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    currentLocation = `${latitude}, ${longitude}`;
-                    
-                    document.getElementById('gpsStatus').classList.remove('checking', 'off');
-                    document.getElementById('gpsStatus').classList.add('on');
-                    document.getElementById('gpsStatusText').innerHTML = '📍 GPS: ON';
-                    document.getElementById('gpsMessage').innerHTML = 'Location captured successfully!';
-                    
-                    showStatus('📍 Getting address...', 'loading');
-                    
-                    try {
-                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                        const data = await response.json();
-                        currentAddress = data.display_name || currentLocation;
-                    } catch(e) {
-                        currentAddress = currentLocation;
-                    }
-                    
-                    document.getElementById('locationArea').classList.add('location-detected');
-                    document.getElementById('locationText').innerHTML = '✅ Location Detected!';
-                    document.getElementById('locationSubtext').innerHTML = currentAddress.substring(0, 60);
-                    showStatus('✅ Location captured successfully! You can now submit attendance.', 'success');
-                },
-                (error) => {
-                    let msg = '';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            msg = '❌ Location permission denied. Click "GET MY LOCATION" again and click ALLOW in the Chrome popup, or use manual entry.';
-                            document.getElementById('gpsStatus').classList.remove('checking', 'on');
-                            document.getElementById('gpsStatus').classList.add('off');
-                            document.getElementById('gpsStatusText').innerHTML = '📍 GPS: BLOCKED';
-                            document.getElementById('gpsMessage').innerHTML = 'Permission denied. Use manual entry or allow location.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            msg = '❌ Location unavailable. Please turn on GPS or use manual entry.';
-                            break;
-                        case error.TIMEOUT:
-                            msg = '❌ Location timeout. Please try again.';
-                            break;
-                        default:
-                            msg = '❌ Error getting location. Please use manual entry.';
-                    }
-                    showStatus(msg, 'error');
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-        }
+<!-- ══ PIN ══ -->
+<div id="pin" class="screen">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+    <span class="nav-title">Admin Login</span>
+  </div>
+  <div class="page-center">
+    <svg width="48" height="48" fill="none" stroke="#1565C0" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <p style="font-size:15px;font-weight:600;margin-bottom:4px">Admin Access</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Enter 4-digit PIN to view reports</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <p id="pin-err" style="font-size:12px;color:#C62828;min-height:18px;margin-bottom:4px"></p>
+    <div class="numpad">
+      <button class="num-btn" onclick="pk('1')">1</button><button class="num-btn" onclick="pk('2')">2</button><button class="num-btn" onclick="pk('3')">3</button>
+      <button class="num-btn" onclick="pk('4')">4</button><button class="num-btn" onclick="pk('5')">5</button><button class="num-btn" onclick="pk('6')">6</button>
+      <button class="num-btn" onclick="pk('7')">7</button><button class="num-btn" onclick="pk('8')">8</button><button class="num-btn" onclick="pk('9')">9</button>
+      <button class="num-btn" onclick="pk('del')" style="font-size:16px">&#9003;</button>
+      <button class="num-btn" onclick="pk('0')">0</button>
+      <button class="num-btn num-ok" onclick="pk('ok')" style="font-size:14px">OK</button>
+    </div>
+  </div>
+</div>
 
-        function toggleManualMode() {
-            const manualDiv = document.getElementById('manualLocation');
-            if (manualDiv.classList.contains('show')) {
-                manualDiv.classList.remove('show');
-                document.querySelector('.manual-toggle-btn').innerHTML = '✍️ Enter Location Manually Instead';
-                usingManualLocation = false;
-            } else {
-                manualDiv.classList.add('show');
-                document.querySelector('.manual-toggle-btn').innerHTML = '🔄 Back to Auto Detect';
-                usingManualLocation = true;
-            }
-        }
+<!-- ══ REPORT ══ -->
+<div id="report" class="screen">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+    <span class="nav-title">Admin Report</span>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn-warn" onclick="resetDeviceLocks()">&#128275; Reset Device Locks</button>
+      <button class="btn btn-sm btn-primary" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>
+  <div style="padding:16px;max-width:1100px;margin:0 auto">
+    <div class="stats-grid" id="r-stats"></div>
+    <div class="card">
+      <div class="card-header">
+        All Attendance Records
+        <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="f-search" placeholder="&#128269; Search name or phone…" oninput="renderReport()">
+        <input type="date" id="f-date" onchange="renderReport()" title="Filter by date">
+        <select id="f-tech" onchange="renderReport()"><option value="">All technicians</option></select>
+      </div>
+      <div class="table-wrap" id="r-table"></div>
+    </div>
+  </div>
+</div>
 
-        function useManualLocation() {
-            const lat = document.getElementById('manualLat').value.trim();
-            const lng = document.getElementById('manualLng').value.trim();
-            const addr = document.getElementById('manualAddress').value.trim();
-            
-            if (!lat || !lng) {
-                showStatus('❌ Please enter latitude and longitude', 'error');
-                return;
-            }
-            
-            currentLocation = `${lat}, ${lng}`;
-            currentAddress = addr || `Manual Entry: ${lat}, ${lng}`;
-            document.getElementById('locationArea').classList.add('location-detected');
-            document.getElementById('locationText').innerHTML = '✅ Manual Location Set';
-            document.getElementById('locationSubtext').innerHTML = currentAddress.substring(0, 60);
-            showStatus('✅ Manual location saved! You can now submit attendance.', 'success');
-        }
+<script>
+const ADMIN_PIN='5252';
+let records=[];
+let locData=null;
+let pinVal='';
+let deviceId='';
 
-        // Save attendance to Google Sheet
-        async function saveAttendance(name, location, address, method) {
-            const data = {
-                timestamp: new Date().toISOString(),
-                name: name,
-                location: location,
-                address: address,
-                method: method,
-                deviceId: deviceId
-            };
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                return true;
-            } catch(error) {
-                console.error('Error:', error);
-                return false;
-            }
-        }
+/* ── DEVICE ID ── */
+function getDeviceId(){
+  let id=localStorage.getItem('ifb_device_id');
+  if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('ifb_device_id',id);}
+  return id;
+}
 
-        // Load all records from Google Sheet
-        async function loadAllRecords() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-                const result = await response.json();
-                if (result.success) {
-                    allRecords = result.records;
-                    return allRecords;
-                }
-                return [];
-            } catch(error) {
-                console.error('Error loading records:', error);
-                return [];
-            }
-        }
+function todayKey(){return new Date().toISOString().slice(0,10);}
 
-        // Submit attendance
-        document.getElementById('submitBtn').addEventListener('click', async () => {
-            const name = document.getElementById('techName').value.trim();
-            
-            if (!name) {
-                showStatus('❌ Please enter technician name!', 'error');
-                return;
-            }
-            
-            if (!currentLocation) {
-                showStatus('❌ Please get location first! Click "GET MY LOCATION" button.', 'error');
-                return;
-            }
-            
-            deviceId = getDeviceId();
-            const method = usingManualLocation ? 'Manual Entry' : 'Auto GPS';
-            
-            showStatus('📤 Saving attendance to central database...', 'loading');
-            
-            const success = await saveAttendance(name, currentLocation, currentAddress, method);
-            
-            if (success) {
-                showStatus(`✅ Attendance marked for ${name}! Data saved to central database.`, 'success');
-                
-                setTimeout(() => {
-                    document.getElementById('techName').value = '';
-                    currentLocation = null;
-                    currentAddress = null;
-                    document.getElementById('locationArea').classList.remove('location-detected');
-                    document.getElementById('locationText').innerHTML = 'No Location Yet';
-                    document.getElementById('locationSubtext').innerHTML = 'Click "GET MY LOCATION" button above';
-                    document.getElementById('manualLocation').classList.remove('show');
-                    usingManualLocation = false;
-                    document.querySelector('.manual-toggle-btn').innerHTML = '✍️ Enter Location Manually Instead';
-                    document.getElementById('manualLat').value = '';
-                    document.getElementById('manualLng').value = '';
-                    document.getElementById('manualAddress').value = '';
-                }, 2000);
-            } else {
-                showStatus('❌ Failed to save. Check your connection.', 'error');
-            }
+function hasMarkedToday(){
+  return localStorage.getItem('ifb_marked_'+todayKey())==='1';
+}
+
+function markDeviceToday(){
+  localStorage.setItem('ifb_marked_'+todayKey(),'1');
+}
+
+/* ── DATA ── */
+function saveAll(){localStorage.setItem('ifb_att_v2',JSON.stringify(records));}
+function loadAll(){
+  try{const d=localStorage.getItem('ifb_att_v2');if(d)records=JSON.parse(d);}catch(e){records=[];}
+}
+
+/* ── NAVIGATION ── */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='home') renderHomeStats();
+  if(id==='report') renderReport();
+  if(id==='checkin'){locData=null;resetLoc();}
+  if(id==='pin'){pinVal='';renderDots();document.getElementById('pin-err').textContent='';}
+}
+
+function goCheckin(){
+  if(hasMarkedToday()){
+    const today=todayLabel();
+    const existing=records.find(r=>r.deviceId===deviceId && r.date===today);
+    let info='';
+    if(existing){
+      info=`Attendance was marked for <strong>${existing.name}</strong> at <strong>${existing.time}</strong> on <strong>${existing.date}</strong>.<br><br>If you are a different technician, please use a different device.`;
+    } else {
+      info='This device has already submitted attendance today.';
+    }
+    document.getElementById('blocked-info').innerHTML=info;
+    go('blocked');
+  } else {
+    go('checkin');
+  }
+}
+
+/* ── HOME STATS ── */
+function renderHomeStats(){
+  const today=todayLabel();
+  const tc=records.filter(r=>r.date===today).length;
+  const ut=new Set(records.map(r=>r.name)).size;
+  document.getElementById('home-stats').innerHTML=`
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">${tc}</div><div class="stat-lbl">Today's Check-ins</div></div>
+      <div class="stat-card"><div class="stat-val">${records.length}</div><div class="stat-lbl">Total Records</div></div>
+      <div class="stat-card"><div class="stat-val">${ut}</div><div class="stat-lbl">Technicians</div></div>
+    </div>`;
+}
+
+/* ── LOCATION ── */
+function resetLoc(){
+  const box=document.getElementById('loc-box');
+  box.className='loc-box';box.onclick=getLocation;
+  document.getElementById('loc-label').textContent='Tap to Capture Location';
+  document.getElementById('loc-label').style.color='#1565C0';
+  document.getElementById('loc-sub').innerHTML='Chrome will ask permission — tap <strong>Allow</strong>';
+  document.getElementById('loc-icon').style.background='#EEF2FF';
+  document.getElementById('loc-icon').innerHTML=`<svg id="loc-svg" width="22" height="22" fill="none" stroke="#1565C0" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><svg id="loc-spinner" width="22" height="22" viewBox="0 0 22 22" style="display:none;animation:spin 1s linear infinite"><circle cx="11" cy="11" r="9" fill="none" stroke="#1565C0" stroke-width="2.5" stroke-dasharray="40 20"/></svg>`;
+  document.getElementById('loc-denied').style.display='none';
+}
+
+function setSpinner(on){
+  const sv=document.getElementById('loc-svg'),sp=document.getElementById('loc-spinner');
+  if(sv)sv.style.display=on?'none':'';
+  if(sp)sp.style.display=on?'':'none';
+}
+
+function getLocation(){
+  if(locData&&locData.lat!=='N/A')return;
+  const lbl=document.getElementById('loc-label'),sub=document.getElementById('loc-sub'),box=document.getElementById('loc-box');
+  document.getElementById('loc-denied').style.display='none';
+  if(!navigator.geolocation){lbl.style.color='#C62828';lbl.textContent='Geolocation not supported on this browser';return;}
+  const tryGPS=()=>{
+    lbl.textContent='Waiting for permission…';lbl.style.color='#1565C0';
+    sub.textContent='A popup will appear — tap Allow in Chrome';
+    setSpinner(true);box.onclick=null;
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        locData={lat:pos.coords.latitude.toFixed(6),lng:pos.coords.longitude.toFixed(6),acc:Math.round(pos.coords.accuracy),address:''};
+        setSpinner(false);
+        box.className='loc-box captured';box.onclick=null;
+        document.getElementById('loc-icon').style.background='#E8F5E9';
+        document.getElementById('loc-icon').innerHTML='<svg width="22" height="22" fill="none" stroke="#2E7D32" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+        lbl.style.color='#2E7D32';lbl.textContent='Location Captured ✓';
+        sub.textContent=`${locData.lat}, ${locData.lng}  ±${locData.acc}m — fetching address…`;
+        reverseGeocode(locData.lat,locData.lng,addr=>{
+          locData.address=addr;
+          sub.textContent=addr||`${locData.lat}, ${locData.lng}  ±${locData.acc}m`;
         });
+      },
+      err=>{
+        setSpinner(false);box.onclick=getLocation;
+        if(err.code===1){
+          lbl.style.color='#C62828';lbl.textContent='Location permission denied';
+          sub.textContent='Follow the steps below to fix it';
+          document.getElementById('loc-denied').style.display='block';
+        } else if(err.code===2){
+          lbl.style.color='#C62828';lbl.textContent='Could not detect location';
+          sub.textContent='Enable GPS / mobile data on your device and tap again';
+        } else {
+          lbl.style.color='#E65100';lbl.textContent='Timed out — tap to retry';
+          sub.textContent='GPS signal weak. Move near a window and try again';
+        }
+      },
+      {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+    );
+  };
+  if(navigator.permissions){
+    navigator.permissions.query({name:'geolocation'}).then(r=>{r.state==='denied'?(()=>{
+      lbl.style.color='#C62828';lbl.textContent='Location permission denied';
+      sub.textContent='Follow the steps below to fix it';
+      document.getElementById('loc-denied').style.display='block';
+    })():tryGPS();});
+  } else {tryGPS();}
+}
 
-        // Get Location Button
-        document.getElementById('getLocationBtn').addEventListener('click', () => {
-            getCurrentLocation();
+/* ── REVERSE GEOCODE via OpenStreetMap Nominatim (free, no API key) ── */
+function reverseGeocode(lat,lng,cb){
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`,
+    {headers:{'Accept-Language':'en','User-Agent':'IFBAttendanceApp/1.0'}})
+  .then(r=>r.json())
+  .then(data=>{
+    const a=data.address||{};
+    const parts=[
+      a.shop||a.building||a.amenity||a.road||a.pedestrian||a.footway||'',
+      a.suburb||a.neighbourhood||a.quarter||'',
+      a.city||a.town||a.village||a.county||'',
+      a.state||'',
+      a.postcode||''
+    ].filter(Boolean);
+    cb(parts.slice(0,5).join(', '));
+  })
+  .catch(()=>cb(''));
+}
+
+/* ── SUBMIT ── */
+function submitAttendance(){
+  const name=document.getElementById('f-name').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const device=document.getElementById('f-device').value.trim();
+  if(!name){alert('Please enter your full name.');return;}
+  if(!phone){alert('Please enter your phone number.');return;}
+  if(!locData){alert('Please capture your location first by tapping the location box.');return;}
+  const now=new Date();
+  const rec={
+    id:Date.now(),name,phone,device:device||'—',
+    lat:locData.lat,lng:locData.lng,acc:locData.acc,address:locData.address||'',
+    date:todayLabel(),
+    time:now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}),
+    ts:now.toISOString(),
+    deviceId:deviceId,
+    ua:navigator.userAgent.substring(0,120)
+  };
+  records.unshift(rec);
+  saveAll();
+  markDeviceToday();
+  document.getElementById('s-msg').innerHTML=`<strong>${name}</strong> checked in at <strong>${rec.time}</strong><br>${rec.date}`;
+  const addr=locData.address?`<div style="font-size:12px;color:#444;margin-top:4px">${locData.address}</div>`:'';
+  const mlink=locData.lat!=='N/A'?`<br><a href="https://maps.google.com/?q=${locData.lat},${locData.lng}" target="_blank" style="color:#1565C0;font-size:13px">View on Google Maps ↗</a>`:'';
+  document.getElementById('s-loc').innerHTML=`<div style="background:#f5f5f5;border-radius:8px;padding:12px 14px;text-align:left;font-size:12px;color:var(--muted)">${locData.lat}, ${locData.lng}${addr}${mlink}</div>`;
+  document.getElementById('f-name').value='';document.getElementById('f-phone').value='';document.getElementById('f-device').value='';
+  go('success');
+}
+
+/* ── PIN ── */
+function pk(k){
+  const err=document.getElementById('pin-err');
+  if(k==='del'){pinVal=pinVal.slice(0,-1);}
+  else if(k==='ok'){
+    if(pinVal===ADMIN_PIN){go('report');}
+    else{err.textContent='Incorrect PIN. Please try again.';pinVal='';}
+  } else {
+    if(pinVal.length<4) pinVal+=k;
+    if(pinVal.length===4){
+      if(pinVal===ADMIN_PIN){setTimeout(()=>go('report'),200);}
+      else{setTimeout(()=>{err.textContent='Incorrect PIN. Please try again.';pinVal='';renderDots();},300);}
+    }
+  }
+  renderDots();
+}
+function renderDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.toggle('filled',i<pinVal.length);}
+
+/* ── REPORT ── */
+function renderReport(){
+  const today=todayLabel();
+  const tc=records.filter(r=>r.date===today).length;
+  const ut=new Set(records.map(r=>r.name)).size;
+  document.getElementById('r-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${records.length}</div><div class="stat-lbl">Total Records</div></div>
+    <div class="stat-card"><div class="stat-val">${tc}</div><div class="stat-lbl">Today</div></div>
+    <div class="stat-card"><div class="stat-val">${ut}</div><div class="stat-lbl">Technicians</div></div>`;
+
+  // populate tech filter
+  const sel=document.getElementById('f-tech'),cur=sel.value;
+  const names=[...new Set(records.map(r=>r.name))].sort();
+  sel.innerHTML='<option value="">All technicians</option>'+names.map(n=>`<option value="${n}"${n===cur?'selected':''}>${n}</option>`).join('');
+
+  const search=(document.getElementById('f-search').value||'').toLowerCase();
+  const dateF=document.getElementById('f-date').value;
+  const techF=sel.value;
+  let filtered=records.filter(r=>{
+    if(search&&!r.name.toLowerCase().includes(search)&&!r.phone.includes(search))return false;
+    if(dateF&&r.ts.slice(0,10)!==dateF)return false;
+    if(techF&&r.name!==techF)return false;
+    return true;
+  });
+
+  const tbl=document.getElementById('r-table');
+  if(!filtered.length){tbl.innerHTML='<div class="empty-state">No records match your filter.</div>';return;}
+
+  let needsGeo=false;
+  const rows=filtered.map((r,i)=>{
+    const isToday=r.date===today;
+    const addrHtml=r.address
+      ?`<div style="font-size:11px;color:#333;margin-top:4px;line-height:1.5">${r.address}</div>`
+      :`<div style="font-size:11px;color:#aaa;margin-top:3px">fetching address…</div>`;
+    if(!r.address&&r.lat!=='N/A') needsGeo=true;
+    return `<tr>
+      <td style="font-size:12px;color:var(--muted);text-align:center;white-space:nowrap">${filtered.length-i}</td>
+      <td><strong style="font-size:13px">${r.name}</strong>${isToday?`<br><span class="badge badge-green" style="margin-top:4px;font-size:10px">Today</span>`:''}</td>
+      <td style="white-space:nowrap">${r.phone}</td>
+      <td style="font-size:12px;color:var(--muted)">${r.device}</td>
+      <td><span class="badge badge-blue">${r.date}</span></td>
+      <td style="font-weight:600;white-space:nowrap">${r.time}</td>
+      <td style="font-size:11px;color:var(--muted);line-height:1.5">${r.lat}<br>${r.lng}<br><span style="color:#ccc">±${r.acc}m</span>${addrHtml}</td>
+      <td>${r.lat!=='N/A'?`<a class="map-link" href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank">Map ↗</a>`:'-'}</td>
+      <td style="font-size:10px;color:var(--muted);max-width:140px;word-break:break-all;line-height:1.5">${r.ua}</td>
+    </tr>`;
+  }).join('');
+  tbl.innerHTML=`<table>
+    <thead><tr><th>#</th><th>Technician</th><th>Phone</th><th>Device</th><th>Date</th><th>Check-in Time</th><th>GPS + Address</th><th>Map</th><th>Browser Info</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  // fetch missing addresses in background (rate-limit: 1 per second per Nominatim policy)
+  if(needsGeo){
+    const missing=filtered.filter(r=>!r.address&&r.lat!=='N/A');
+    missing.forEach((r,idx)=>{
+      setTimeout(()=>{
+        reverseGeocode(r.lat,r.lng,addr=>{
+          r.address=addr;saveAll();
+          // update just that cell instead of full re-render to avoid loop
+          renderReport();
         });
+      },idx*1100);
+    });
+  }
+}
 
-        // Report functions
-        async function loadReport() {
-            const fromDate = document.getElementById('fromDate').value;
-            const toDate = document.getElementById('toDate').value;
-            
-            document.getElementById('reportBody').innerHTML = '<tr><td colspan="6" style="text-align:center">Loading from central database...</td></tr>';
-            
-            const records = await loadAllRecords();
-            
-            let filteredRecords = records;
-            
-            if (fromDate && toDate) {
-                filteredRecords = records.filter(record => {
-                    const recordDate = record.date || new Date(record.timestamp).toISOString().split('T')[0];
-                    return recordDate >= fromDate && recordDate <= toDate;
-                });
-            } else if (fromDate) {
-                filteredRecords = records.filter(record => {
-                    const recordDate = record.date || new Date(record.timestamp).toISOString().split('T')[0];
-                    return recordDate >= fromDate;
-                });
-            } else if (toDate) {
-                filteredRecords = records.filter(record => {
-                    const recordDate = record.date || new Date(record.timestamp).toISOString().split('T')[0];
-                    return recordDate <= toDate;
-                });
-            }
-            
-            displayReport(filteredRecords);
-            displayStats(filteredRecords);
-        }
+function clearAll(){
+  if(confirm('Delete ALL attendance records? This cannot be undone.')){records=[];saveAll();renderReport();}
+}
 
-        function refreshReport() {
-            loadReport();
-        }
+function resetDeviceLocks(){
+  if(confirm('Reset all device locks for today? All devices will be able to mark attendance again today.\n\nUse this only if a technician genuinely needs to re-submit (e.g. wrong info entered).')){
+    Object.keys(localStorage).filter(k=>k.startsWith('ifb_marked_')).forEach(k=>localStorage.removeItem(k));
+    alert('Done. All devices can now mark attendance again today.');
+  }
+}
 
-        function displayReport(records) {
-            const tbody = document.getElementById('reportBody');
-            
-            if (records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">📭 No attendance records found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = records.map((record, index) => `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td><strong>${escapeHtml(record.name)}</strong></td>
-                    <td>${record.timestamp ? new Date(record.timestamp).toLocaleString() : record.date}</td>
-                    <td>${record.location}</td>
-                    <td>${escapeHtml((record.address || '').substring(0, 40))}</td>
-                    <td><span style="background:${record.method === 'Auto GPS' ? '#d4edda' : '#fff3cd'}; padding:3px 8px; border-radius:5px;">${record.method}</span></td>
-                </tr>
-            `).join('');
-        }
+function exportCSV(){
+  const hdr='#,Name,Phone,Device,Date,Time,Latitude,Longitude,Accuracy(m),Address,Timestamp,Device ID\n';
+  const rows=records.map((r,i)=>[
+    i+1,r.name,r.phone,r.device,r.date,r.time,r.lat,r.lng,r.acc,r.address||'',r.ts,r.deviceId||''
+  ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([hdr+rows],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`IFB_Attendance_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
 
-        function displayStats(records) {
-            const statsContainer = document.getElementById('statsContainer');
-            const total = records.length;
-            const uniqueTechs = new Set(records.map(r => r.name.toLowerCase())).size;
-            const autoGPS = records.filter(r => r.method === 'Auto GPS').length;
-            const manual = records.filter(r => r.method === 'Manual Entry').length;
-            
-            statsContainer.innerHTML = `
-                <div class="stat-card"><h3>📊 Total Attendance</h3><div class="number">${total}</div></div>
-                <div class="stat-card"><h3>👥 Unique Technicians</h3><div class="number">${uniqueTechs}</div></div>
-                <div class="stat-card"><h3>📍 Auto GPS</h3><div class="number">${autoGPS}</div></div>
-                <div class="stat-card"><h3>✍️ Manual Entry</h3><div class="number">${manual}</div></div>
-            `;
-        }
+function todayLabel(){
+  return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
 
-        function setToday() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('fromDate').value = today;
-            document.getElementById('toDate').value = today;
-            loadReport();
-        }
-
-        function setYesterday() {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
-            document.getElementById('fromDate').value = dateStr;
-            document.getElementById('toDate').value = dateStr;
-            loadReport();
-        }
-
-        function setThisWeek() {
-            const today = new Date();
-            const startOfWeek = new Date(today);
-            const day = today.getDay();
-            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-            startOfWeek.setDate(diff);
-            document.getElementById('fromDate').value = startOfWeek.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            loadReport();
-        }
-
-        function setThisMonth() {
-            const today = new Date();
-            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            document.getElementById('fromDate').value = startOfMonth.toISOString().split('T')[0];
-            document.getElementById('toDate').value = today.toISOString().split('T')[0];
-            loadReport();
-        }
-
-        function clearFilters() {
-            document.getElementById('fromDate').value = '';
-            document.getElementById('toDate').value = '';
-            loadReport();
-        }
-
-        function switchTab(tabName) {
-            const attendanceTab = document.getElementById('attendanceTab');
-            const reportTab = document.getElementById('reportTab');
-            const tabs = document.querySelectorAll('.tab');
-            
-            if (tabName === 'attendance') {
-                attendanceTab.classList.add('active');
-                reportTab.classList.remove('active');
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-            }
-        }
-
-        function checkPinAndOpenReport() {
-            document.getElementById('pinModal').classList.add('show');
-            document.getElementById('pinInput').value = '';
-            document.getElementById('pinInput').focus();
-        }
-
-        function closePinModal() {
-            document.getElementById('pinModal').classList.remove('show');
-        }
-
-        function verifyPin() {
-            const enteredPin = document.getElementById('pinInput').value;
-            if (enteredPin === CORRECT_PIN) {
-                closePinModal();
-                document.getElementById('attendanceTab').classList.remove('active');
-                document.getElementById('reportTab').classList.add('active');
-                document.querySelectorAll('.tab')[0].classList.remove('active');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                setToday();
-            } else {
-                alert('❌ Incorrect PIN! Access denied.');
-                document.getElementById('pinInput').value = '';
-                document.getElementById('pinInput').focus();
-            }
-        }
-
-        function showStatus(message, type) {
-            const statusCard = document.getElementById('statusCard');
-            statusCard.className = `status-card ${type}`;
-            statusCard.innerHTML = message;
-            statusCard.style.display = 'block';
-            setTimeout(() => {
-                statusCard.style.display = 'none';
-            }, 4000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function exportToExcel() {
-            const table = document.getElementById('reportTable');
-            const html = table.outerHTML;
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `attendance_report_${new Date().toISOString().split('T')[0]}.xls`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-
-        function exportToCSV() {
-            const records = allRecords;
-            if (records.length === 0) {
-                alert('No records to export!');
-                return;
-            }
-            
-            const headers = ['Sl No', 'Technician Name', 'Date & Time', 'Location', 'Address', 'Method'];
-            const csvRows = [headers];
-            records.forEach((record, index) => {
-                csvRows.push([
-                    index + 1,
-                    record.name,
-                    record.timestamp ? new Date(record.timestamp).toLocaleString() : record.date,
-                    record.location,
-                    record.address || 'N/A',
-                    record.method
-                ]);
-            });
-            
-            const csvContent = csvRows.map(row => row.join(',')).join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `attendance_report_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
-
-        // Initialize
-        deviceId = getDeviceId();
-    </script>
+deviceId=getDeviceId();
+loadAll();
+renderHomeStats();
+</script>
 </body>
 </html>
